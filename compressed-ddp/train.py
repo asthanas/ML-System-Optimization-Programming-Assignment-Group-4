@@ -97,8 +97,7 @@ def main():
     error_buffer = ErrorFeedbackBuffer(device=str(device)) if (args.compress and not args.no_error_feedback) else None
     backend = DistributedBackend(compressor=compressor, error_buffer=error_buffer,
                                  world_size=args.world_size, rank=args.rank)
-    train_loader, val_loader = get_dataloaders(
-        args.dataset, args.batch_size, args.data_dir, args.rank, args.world_size)
+    train_loader, val_loader = get_dataloaders(args.dataset, args.batch_size, args.data_dir)
     optimizer = optim.SGD(model.parameters(), lr=args.lr,
                           momentum=args.momentum, weight_decay=args.weight_decay)
     scheduler = optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=args.epochs)
