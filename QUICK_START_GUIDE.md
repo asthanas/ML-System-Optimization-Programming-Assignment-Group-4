@@ -24,7 +24,7 @@ The automated setup makes this easy:
 ```bash
 # 1. clone the github repo
 git clone https://github.com/asthanas/ML-System-Optimization-Programming-Assignment-Group-4.git
-cd mlsysops-assignment
+cd compressed-ddp
 
 # 2. Run setup (creates virtual env, installs dependencies)
 bash setup.sh

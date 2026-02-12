@@ -40,7 +40,8 @@ This project implements gradient compression for distributed deep learning using
 Here's the complete organization of the project with all 60+ files:
 
 ```
-mlsysops-assignment/
+
+ML-System-Optimization-Programming-Assignment-Group-4/
 │
 ├── FINAL_SUBMISSION_CHECKLIST.md      # Submission cover page
 ├── COMPLETE_ASSIGNMENT_SOLUTION.md    # This file - complete technical write-up

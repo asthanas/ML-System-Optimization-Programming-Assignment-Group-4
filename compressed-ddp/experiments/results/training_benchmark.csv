@@ -1,0 +1,5 @@
+name,mean_epoch_s,final_val_acc,speedup
+baseline,14.51,98.94,1.0
+topk_0.1,19.0,98.69,0.76
+topk_0.01,16.57,97.77,0.88
+topk_0.001,15.96,94.11,0.91
