@@ -1,400 +1,424 @@
-# QUICK START GUIDE
-## Setup, Usage, and Troubleshooting
+# Quick Start Guide
 
-**Date:** February 12, 2026
+**Getting up and running with Compressed-DDP**
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+---
 
-## 1. INSTALLATION (2 MINUTES)
+## Before You Start
 
-### Prerequisites
+You'll need:
+- Python 3.9 or newer (I'm using 3.13)
+- pip for installing packages
+- About 1GB of disk space (for datasets)
+- 4GB of RAM (more is better)
+- 5-10 minutes for setup
 
-- Python 3.9+ (tested on 3.9, 3.10, 3.11, 3.13)
-- pip package manager
-- 4GB RAM minimum
-- 1GB disk space for datasets
+That's it! No GPU required (though it helps for bigger models).
 
-### Step-by-Step Setup
+---
+
+## Installation
+
+The automated setup makes this easy:
 
 ```bash
-# 1. Extract the submission package
-unzip compressed-ddp-final-submission.zip
-cd compressed-ddp
+# 1. clone the github repo
+git clone https://github.com/asthanas/ML-System-Optimization-Programming-Assignment-Group-4.git
+cd mlsysops-assignment
 
-# 2. Run automated setup
+# 2. Run setup (creates virtual env, installs dependencies)
 bash setup.sh
 
-# 3. Activate virtual environment
-source venv/bin/activate       # Linux/macOS
-# OR
-venv\Scripts\activate         # Windows
+# 3. Activate the environment
+source venv/bin/activate
 ```
 
-**What setup.sh does:**
-- Creates Python virtual environment
-- Installs PyTorch and dependencies
-- Installs project in editable mode
-- Verifies installation
+The setup script will:
+- Check your Python version
+- Create a virtual environment
+- Install PyTorch and other dependencies
+- Verify everything works
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+This takes about 2-3 minutes on a decent internet connection.
 
-## 2. QUICK VALIDATION (30 SECONDS)
+### Windows Users
 
-Verify everything works before diving deeper:
+If you're on Windows, use `setup.bat` instead of `setup.sh`:
+
+```cmd
+setup.bat
+venv\Scripts\activate
+```
+
+Or use the universal Python script:
+
+```bash
+python setup.py
+venv\Scripts\activate  # Windows
+source venv/bin/activate # Linux/macOS
+```
+
+---
+
+## Quick Validation
+
+Before doing anything else, make sure everything works:
 
 ```bash
 python experiments/quick_validation.py
 ```
 
-**Expected Output:**
-```
-============================================
-Quick Validation Suite
-============================================
+You should see:
 
+```
 [PASS] Module imports  (120 ms)
 [PASS] CPU Top-K compression  (45 ms)
 [PASS] Error feedback buffer  (12 ms)
 [PASS] SimpleCNN forward pass  (18 ms)
 [PASS] Compressed training step  (230 ms)
 
-============================================
-✅ All checks passed!
-============================================
+All checks passed ✅
 ```
 
-If this passes, your environment is ready!
+If you see this, you're good to go! If not, check the troubleshooting section below.
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+---
 
-## 3. BASIC USAGE
+## Basic Usage
 
-### 3.1 Baseline Training (No Compression)
+### Training Without Compression (Baseline)
+
+Let's start simple - train a model the normal way:
 
 ```bash
 python train.py --model simple_cnn --dataset mnist --epochs 5
 ```
 
-**Expected:**
-- Training time: ~60 seconds (CPU)
-- Final accuracy: ~98.2%
+This will:
+- Download MNIST (if needed)
+- Train for 5 epochs
+- Show training progress
+- Reach about 98.2% accuracy
 
-### 3.2 Training with Compression
+Takes about 5 minutes on CPU.
+
+### Training With Compression
+
+Now let's add compression:
 
 ```bash
 python train.py --model simple_cnn --dataset mnist \
     --epochs 5 --compress --ratio 0.01
 ```
 
-**Expected:**
-- Training time: ~62 seconds (minimal overhead)
-- Final accuracy: ~97.9% (within 1%)
-- Bandwidth saved: 97%
+Same model, but now:
+- Compresses gradients to 1% of original size
+- Uses error feedback for convergence
+- Saves 97% of bandwidth
+- Reaches about 97.9% accuracy (only 0.3pp lower!)
 
-### 3.3 Run Test Suite
+The training time is similar because we're on a single machine. The benefits show up when you're actually doing distributed training across multiple GPUs.
+
+---
+
+## Running Tests
+
+Check that everything works correctly:
 
 ```bash
-# Run all 22 tests
+# All tests
 bash scripts/run_tests.sh
 
 # Or use pytest directly
 pytest tests/ -v
+
+# Or run specific test files
+pytest tests/test_compression.py -v
 ```
 
-**Expected:**
+All 22 tests should pass. Takes about 2 minutes.
+
+---
+
+## Benchmarks
+
+Want to see performance numbers?
+
+### Compression Speed
+
+```bash
+python experiments/benchmark_compression.py
 ```
-tests/test_compression.py::test_topk_selects_largest PASSED
-tests/test_compression.py::test_shape_preserved PASSED
-...
-tests/test_integration.py::test_accuracy_comparable PASSED
 
-22 passed in 45.2s
+This tests how fast the compression algorithm is at different sizes and ratios.
+
+### Training Comparison
+
+```bash
+python experiments/benchmark_training.py
 ```
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Compares training time and accuracy with and without compression.
 
-## 4. ADVANCED USAGE
+**macOS/Python 3.13 Users:** Use the fixed versions instead:
 
-### 4.1 Multi-GPU Training
+```bash
+python benchmark_compression_fixed.py
+python benchmark_training_fixed.py
+
+# Or run both:
+bash run_all_benchmarks.sh
+```
+
+---
+
+## Common Use Cases
+
+### Different Models
+
+```bash
+# SimpleCNN (small, fast)
+python train.py --model simple_cnn --dataset mnist --epochs 5
+
+# ResNet-18 (medium)
+python train.py --model resnet18 --dataset cifar10 --epochs 50
+
+# ResNet-50 (large)
+python train.py --model resnet50 --dataset cifar10 --epochs 50
+```
+
+### Different Compression Ratios
+
+```bash
+# Conservative (10%)
+python train.py --compress --ratio 0.1 --epochs 5
+
+# Sweet spot (1%) - recommended
+python train.py --compress --ratio 0.01 --epochs 5
+
+# Aggressive (0.1%)
+python train.py --compress --ratio 0.001 --epochs 5
+```
+
+Lower ratios save more bandwidth but may impact accuracy more.
+
+### Multi-GPU Training
+
+If you have multiple GPUs:
 
 ```bash
 # 4 GPUs with NCCL backend
 torchrun --nproc_per_node 4 train.py \
     --model resnet18 --dataset cifar10 \
     --epochs 50 --backend nccl \
-    --compress --ratio 0.01 --batch-size 256
+    --compress --ratio 0.01
 ```
 
-### 4.2 Benchmarks (macOS - Use Fixed Scripts)
+This is where compression really shines!
+
+---
+
+## Monitoring with TensorBoard
+
+Want to see training progress visually?
 
 ```bash
-# Compression throughput
-python benchmark_compression_fixed.py
-
-# Training speed & accuracy
-python benchmark_training_fixed.py
-
-# Or run all benchmarks
-bash run_benchmarks_fixed.sh
-```
-
-### 4.3 Configuration Files
-
-```bash
-# Use YAML config instead of CLI args
-python train.py --config configs/default.yaml
-```
-
-Edit `configs/default.yaml` to customize settings.
-
-### 4.4 TensorBoard Monitoring
-
-```bash
-# Start TensorBoard (in separate terminal)
+# Start TensorBoard (in a separate terminal)
 tensorboard --logdir runs/
 
 # Train with logging
-python train.py --model simple_cnn --dataset mnist \
-    --epochs 10 --compress --ratio 0.01
+python train.py --model simple_cnn --dataset mnist --epochs 10
 
-# View at http://localhost:6006
+# Open http://localhost:6006 in your browser
 ```
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+You'll see:
+- Training and validation accuracy
+- Loss curves
+- Compression statistics (if using compression)
 
-## 5. TROUBLESHOOTING
+---
 
-### 5.1 SSL Certificate Error (macOS)
+## Troubleshooting
 
-**Error:**
-```
-RuntimeError: Error downloading train-images-idx3-ubyte.gz:
-[SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed
-```
+### SSL Certificate Error (macOS)
 
-**Solutions:**
+**Problem:** MNIST download fails with SSL errors
 
-**Option 1: Manual Download (Recommended)**
+**Solution 1** (easiest):
 ```bash
 bash download_mnist.sh
 python train.py --model simple_cnn --dataset mnist --epochs 5
 ```
 
-**Option 2: Use Fixed Training Script**
-```bash
-python train_fixed.py --model simple_cnn --dataset mnist --epochs 5
-```
-
-**Option 3: Fix Python Certificates**
+**Solution 2** (permanent fix):
 ```bash
 /Applications/Python\ 3.13/Install\ Certificates.command
-# Then retry normal training
 ```
 
-### 5.2 Multiprocessing Error (Python 3.13)
+### Multiprocessing Error (Python 3.13)
 
-**Error:**
-```
-RuntimeError: An attempt has been made to start a new process before
-the current process has finished its bootstrapping phase.
-```
+**Problem:** Benchmark scripts fail with multiprocessing errors
 
 **Solution:**
 ```bash
-# Use fixed benchmark scripts
+# Use the fixed versions
 python benchmark_compression_fixed.py
 python benchmark_training_fixed.py
-bash run_benchmarks_fixed.sh
 ```
 
-**Details:** See MULTIPROCESSING_FIX_GUIDE.md
+See `MULTIPROCESSING_FIX_GUIDE.md` for details.
 
-### 5.3 CUDA Out of Memory
+### CUDA Out of Memory
 
-**Error:**
-```
-RuntimeError: CUDA out of memory
-```
+**Problem:** GPU runs out of memory
 
 **Solutions:**
 ```bash
-# Option 1: Reduce batch size
-python train.py --batch-size 32 --device cuda
+# Reduce batch size
+python train.py --batch-size 32
 
-# Option 2: Use CPU
+# Or use CPU
 python train.py --device cpu
-
-# Option 3: Use gradient accumulation (future feature)
 ```
 
-### 5.4 Import Errors
+### Import Errors
 
-**Error:**
-```
-ModuleNotFoundError: No module named 'src'
-```
+**Problem:** `ModuleNotFoundError: No module named 'src'`
 
 **Solution:**
 ```bash
-# Install in editable mode
+# Make sure you're in the right directory
+cd compressed-ddp
+
+# Reinstall in editable mode
 pip install -e .
 
-# Verify installation
-python -c "import src; print('OK')"
+# Activate virtual environment if you haven't
+source venv/bin/activate
 ```
 
-### 5.5 Tests Failing
+### MPS pin_memory Warning (macOS)
 
-**Issue:** Some tests fail on first run
+**Problem:** Warning about pin_memory not supported on MPS
 
-**Solution:**
+**Solution:** This is harmless! You can ignore it or suppress it:
 ```bash
-# Ensure single-process mode (default)
-pytest tests/ -v
-
-# If still failing, check dependencies
-pip install -r requirements.txt
-
-# Run individual test files
-pytest tests/test_compression.py -v
+python -W ignore::UserWarning train.py --model simple_cnn --dataset mnist --epochs 5
 ```
 
-### 5.6 Slow Training on macOS
+---
 
-**Issue:** MPS (Metal) backend warnings
+## Command Reference
 
-**Solution:**
+### Training Arguments
+
 ```bash
-# Use CPU explicitly (often faster for small models)
-python train.py --device cpu
-
-# Or ignore MPS warnings (they're harmless)
-python train.py --device auto  # Auto-detects best device
+python train.py \
+    --model simple_cnn        # Model architecture
+    --dataset mnist           # Dataset to use
+    --epochs 10               # Number of epochs
+    --batch-size 64           # Batch size
+    --lr 0.01                 # Learning rate
+    --compress                # Enable compression
+    --ratio 0.01              # Compression ratio (1%)
+    --backend gloo            # Distributed backend
+    --device auto             # Device (auto/cpu/cuda/mps)
+    --seed 42                 # Random seed
 ```
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+### Common Combinations
 
-## 6. COMMAND REFERENCE
-
-### 6.1 Training Arguments
-
-| Argument | Default | Options | Description |
-|----------|---------|---------|-------------|
-| `--model` | simple_cnn | simple_cnn, resnet18, resnet50 | Model architecture |
-| `--dataset` | mnist | mnist, cifar10 | Dataset to use |
-| `--epochs` | 10 | int | Number of training epochs |
-| `--batch-size` | 64 | int | Batch size per worker |
-| `--lr` | 0.01 | float | Learning rate |
-| `--compress` | False | flag | Enable compression |
-| `--ratio` | 0.01 | 0.001-1.0 | Compression ratio ρ |
-| `--no-error-feedback` | False | flag | Disable error feedback |
-| `--backend` | gloo | gloo, nccl | Distributed backend |
-| `--device` | auto | auto, cpu, cuda, mps | Device to use |
-| `--seed` | 42 | int | Random seed |
-
-### 6.2 Example Commands
-
-**CPU Training:**
+**Quick test:**
 ```bash
-python train.py --model simple_cnn --dataset mnist \
-    --epochs 10 --device cpu
+python train.py --model simple_cnn --dataset mnist --epochs 3
 ```
 
-**GPU Training with Compression:**
+**Full MNIST run:**
 ```bash
-python train.py --model resnet18 --dataset cifar10 \
-    --epochs 50 --device cuda --compress --ratio 0.01
+python train.py --model simple_cnn --dataset mnist --epochs 10 --compress --ratio 0.01
 ```
 
-**Aggressive Compression:**
+**CIFAR-10 baseline:**
 ```bash
-python train.py --model simple_cnn --dataset mnist \
-    --epochs 10 --compress --ratio 0.001  # 99.7% savings
+python train.py --model resnet18 --dataset cifar10 --epochs 50
 ```
 
-**Without Error Feedback (comparison):**
+**CIFAR-10 with compression:**
 ```bash
-python train.py --model simple_cnn --dataset mnist \
-    --epochs 10 --compress --ratio 0.01 --no-error-feedback
-# Expected: Poor convergence (demonstrates EF importance)
+python train.py --model resnet18 --dataset cifar10 --epochs 50 --compress --ratio 0.01
 ```
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+---
 
-## 7. PERFORMANCE EXPECTATIONS
+## Expected Results
 
-### 7.1 Hardware Requirements
+### MNIST (SimpleCNN, 10 epochs)
 
-| Component | Minimum | Recommended |
-|-----------|---------|-------------|
-| CPU | 2 cores | 4+ cores |
-| RAM | 4GB | 8GB+ |
-| GPU | None (CPU works) | CUDA-capable |
-| Disk | 1GB | 5GB+ |
+**Baseline (no compression):**
+- Accuracy: ~98.2%
+- Time: ~5 minutes (CPU)
 
-### 7.2 Training Time Estimates
+**Compressed (1% ratio):**
+- Accuracy: ~97.9% (0.3pp lower)
+- Time: ~5 minutes (CPU)
+- Bandwidth: 97% saved
 
-**SimpleCNN on MNIST (10 epochs):**
-- CPU (M1 Mac): ~2 minutes
-- CPU (Intel i5): ~5 minutes
-- GPU (RTX 3080): ~30 seconds
+### CIFAR-10 (ResNet-18, 50 epochs)
 
-**ResNet-18 on CIFAR-10 (50 epochs):**
-- CPU: ~2 hours
-- GPU (RTX 3080): ~15 minutes
+**Baseline:**
+- Accuracy: ~92.5%
+- Time: ~2 hours (CPU), ~15 min (GPU)
 
-### 7.3 Expected Accuracies
+**Compressed (1% ratio):**
+- Accuracy: ~91.8% (0.7pp lower)
+- Time: Similar (compression overhead minimal)
+- Bandwidth: 97% saved
 
-| Model | Dataset | Epochs | Baseline | Compressed (ρ=0.01) |
-|-------|---------|--------|----------|---------------------|
-| SimpleCNN | MNIST | 10 | 98.2% | 97.9% (-0.3pp) |
-| ResNet-18 | CIFAR-10 | 50 | 92.5% | 91.8% (-0.7pp) |
+---
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+## Tips and Tricks
 
-## 8. GETTING HELP
+**Use compression ratio 0.01 (1%)** - This is the sweet spot. 97% bandwidth savings with minimal accuracy impact.
 
-### 8.1 Documentation
+**Start with quick_validation.py** - Always run this first to make sure your environment is set up correctly.
 
-- **This guide:** Quick start and troubleshooting
-- **COMPLETE_ASSIGNMENT_SOLUTION.md:** Comprehensive report
-- **IMPLEMENTATION_GUIDE.md:** Technical deep-dive
-- **CODE_MAPPING_GUIDE.md:** Theory → code mapping
-- **compressed-ddp/docs/:** P0-P3 technical documentation
+**Check TensorBoard** - It's really helpful to visualize what's happening during training.
 
-### 8.2 Common Questions
+**Use the fixed benchmarks** - If you're on macOS with Python 3.13, use the `*_fixed.py` versions to avoid multiprocessing headaches.
 
-**Q: Do I need a GPU?**
-A: No! CPU works fine for MNIST. GPU recommended for CIFAR-10.
+**Read the logs** - The training script outputs useful info about compression ratios and bandwidth saved.
 
-**Q: How long does setup take?**
-A: ~2-3 minutes (downloads PyTorch and dependencies).
+---
 
-**Q: Can I run on Windows?**
-A: Yes, but use `venv\Scripts\activate` and avoid shell scripts.
+## Next Steps
 
-**Q: What Python version?**
-A: 3.9+ required. Tested on 3.9, 3.10, 3.11, 3.13.
+Once you've got things running:
 
-**Q: Do tests require GPU?**
-A: No, all tests run on CPU.
+1. Try different compression ratios and see how they affect accuracy
+2. Compare baseline vs compressed training side-by-side
+3. Run the benchmarks to measure performance
+4. Check out the source code to see how it works
+5. Read the full documentation in `docs/` for technical details
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+---
 
-## 9. NEXT STEPS
+## Getting Help
 
-After completing quick start:
+**Documentation:**
+- This guide - setup and basic usage
+- COMPLETE_ASSIGNMENT_SOLUTION.md - full technical write-up
+- IMPLEMENTATION_GUIDE.md - code architecture deep dive
+- docs/ folder - detailed P0-P3 documentation
 
-1. ✅ Read EXECUTIVE_SUMMARY.md (5 minutes)
-2. ✅ Review COMPLETE_ASSIGNMENT_SOLUTION.md (30 minutes)
-3. ✅ Explore compressed-ddp/docs/ (P0-P3 documentation)
-4. ✅ Run benchmarks to verify performance
-5. ✅ Experiment with different models/datasets
+**Common Issues:**
+- SSL certificates: Use download_mnist.sh
+- Multiprocessing: Use *_fixed.py benchmark scripts  
+- Import errors: Run `pip install -e .`
+- CUDA OOM: Reduce batch size or use CPU
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+---
 
-**Status:** Ready to use ✅
+That's it! You should now be able to run everything. If you hit any issues not covered here, check the other documentation files or the troubleshooting section.
 
-For detailed technical information, see IMPLEMENTATION_GUIDE.md
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Happy training! 🚀
