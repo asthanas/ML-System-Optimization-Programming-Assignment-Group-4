@@ -40,7 +40,8 @@ This implementation uses **Top-K compression with error feedback**:
 
 ```bash
 # Clone the repository
-git clone <repository-url>
+git clone [<repository-url>](https://github.com/asthanas/ML-System-Optimization-Programming-Assignment-Group-4.git)
+cd ML-System-Optimization-Programming-Assignment-Group-4
 cd compressed-ddp
 
 # Setup (choose one method)
