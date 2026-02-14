@@ -1,3 +1,15 @@
+# ML System Optimization
+
+# Programming Assignment
+
+|S.No | BITS ID  | Name |Contribution|
+|------------|-------|----------|------|
+|1| 2024ac05568@wilp.bits-pilani.ac.in| Saurabh Asthana |100 %|
+|2| 2024ac05563@wilp.bits-pilani.ac.in| Sandeep Konda |100 %|
+|3| 2024ac05023@wilp.bits-pilani.ac.in| Nilesh Kumar |100 %|
+|4| 2024ac05518@wilp.bits-pilani.ac.in| Nishant |100 %|
+|5| 2024ad05012@wilp.bits-pilani.ac.in| Sandhya A.V |100 %|
+
 # Compressed-DDP: Communication-Efficient Distributed Training
 
 **Gradient compression for distributed deep learning using Top-K with error feedback**
@@ -476,14 +488,6 @@ If you use this code in your research, please cite:
   howpublished={\url{https://github.com/yourusername/compressed-ddp}}
 }
 ```
-
----
-
-## Contact
-
-- **Author:** [Your Name]
-- **Email:** [your.email@example.com]
-- **GitHub:** [https://github.com/yourusername/compressed-ddp]
 
 ---
 
